@@ -7,7 +7,34 @@ package inspector
 import (
 	"strconv"
 	"time"
+
+	"go.uber.org/zap/zapcore"
 )
+
+// Payload represents a Language Server Protocol Inspector specification payload.
+type Payload struct {
+	Time       time.Time     `json:"time"`
+	Msg        string        `json:"msg"`
+	MsgKind    MessageKind   `json:"msgKind"`
+	MsgType    string        `json:"msgType"`
+	MsgID      string        `json:"msgId,omitempty"`
+	MsgLatency time.Duration `json:"msgLatency,omitempty"`
+	Arg        []interface{} `json:"arg"`
+}
+
+// compile time check whether the Payload implements zapcore.ObjectMarshaler interface.
+var _ zapcore.ObjectMarshaler = (*Payload)(nil)
+
+// MarshalLogObject implements zapcore.ObjectMarshaler.
+func (p *Payload) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	enc.AddTime("time", p.Time)
+	enc.AddString("msg", p.Msg)
+	enc.AddString("msgKind", p.MsgKind.String())
+	enc.AddString("msgType", p.MsgType)
+	enc.AddString("msgId", p.MsgID)
+	enc.AddDuration("msgLatency", p.MsgLatency)
+	return enc.AddReflected("arg", p.Arg)
+}
 
 // LogFormat represents a Language Server Protocol Inspector log format.
 type LogFormat uint8
@@ -30,17 +57,6 @@ func (lf LogFormat) String() string {
 	default:
 		return strconv.FormatUint(uint64(lf), 10)
 	}
-}
-
-// Payload represents a Language Server Protocol Inspector specification payload.
-type Payload struct {
-	Time       time.Time     `json:"time"`
-	Msg        string        `json:"msg"`
-	MsgKind    MessageKind   `json:"msgKind"`
-	MsgType    string        `json:"msgType"`
-	MsgID      string        `json:"msgId,omitempty"`
-	MsgLatency time.Duration `json:"msgLatency,omitempty"`
-	Arg        []interface{} `json:"arg"`
 }
 
 // MessageKind represents a message kind.

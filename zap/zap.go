@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package inspector
+package inspector_zap
 
 import (
 	"fmt"
@@ -13,25 +13,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// MarshalLogObject implements zapcore.ObjectMarshaler.
-func (p *Payload) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	enc.AddTime("time", p.Time)
-	enc.AddString("msg", p.Msg)
-	enc.AddString("msgKind", p.MsgKind.String())
-	enc.AddString("msgType", p.MsgType)
-	enc.AddString("msgId", p.MsgID)
-	enc.AddDuration("msgLatency", p.MsgLatency)
-	return enc.AddReflected("arg", p.Arg)
-}
-
 // Logger represents a Language Server Protocol Inspector logger.
 type Logger struct {
-	*zap.Logger
+	l *zap.Logger
 }
 
-// NewZapLogger returns a new zap.Logger which implemented
+// NewLogger returns a new Logger which implemented
 // Language Server Protocol Inspector specification log format.
-func NewZapLogger(opts ...zap.Option) *Logger {
+func NewLogger(opts ...zap.Option) *Logger {
 	encCfg := zapcore.EncoderConfig{
 		TimeKey:        "T",
 		LevelKey:       "",
@@ -57,7 +46,7 @@ func NewZapLogger(opts ...zap.Option) *Logger {
 
 	logger, err := cfg.Build(opts...)
 	if err != nil {
-		panic(fmt.Errorf("inspector.NewZapLogger: %v", err))
+		panic(fmt.Errorf("inspector_zap.NewLogger: %v", err))
 	}
 
 	return &Logger{logger}
