@@ -11,6 +11,19 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Logger represents a Language Server Protocol Inspector specification logger.
+type Logger interface {
+	TraceRequest(serverID string, req *Payload, expected bool, queueLength int) error
+	TraceResponse(serverID string, req *Payload, meta Metadata) error
+	TraceRequestCompleted(serverID string, command string, reqSequence int, meta Metadata) error
+	TraceEvent(serverID string, event *Payload) error
+}
+
+// Metadata represents a request metadata.
+type Metadata struct {
+	QueuingStartTime time.Time
+}
+
 // Payload represents a Language Server Protocol Inspector specification payload.
 type Payload struct {
 	Time       time.Time     `json:"time"`
